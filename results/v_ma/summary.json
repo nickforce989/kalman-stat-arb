@@ -1,0 +1,67 @@
+{
+  "research_config": {
+    "asset_a": "V",
+    "asset_b": "MA",
+    "start_date": "2012-01-01",
+    "train_ratio": 0.6,
+    "cost_bps": 5.0
+  },
+  "hedge_ratio": {
+    "alpha": 10.244341892397086,
+    "beta": 0.6070853963009168
+  },
+  "split_index": 2144,
+  "train_end_date": "2020-07-10",
+  "test_start_date": "2020-07-13",
+  "naive": {
+    "config": {
+      "window": 10,
+      "entry_z": 2.0,
+      "exit_z": 0.5
+    },
+    "train_metrics": {
+      "annual_return": 0.023519070278100296,
+      "annual_volatility": 0.034033974800856834,
+      "sharpe": 0.7000559968604876,
+      "max_drawdown": -0.07583758089916093,
+      "total_return": 0.21869662092912612,
+      "trade_count": 110.0,
+      "active_day_ratio": 0.28544776119402987
+    },
+    "test_metrics": {
+      "annual_return": -0.016794108757069437,
+      "annual_volatility": 0.02844984660736945,
+      "sharpe": -0.5810474701953735,
+      "max_drawdown": -0.1162080963008636,
+      "total_return": -0.09163519663824693,
+      "trade_count": 59.0,
+      "active_day_ratio": 0.26853146853146853
+    }
+  },
+  "kalman": {
+    "config": {
+      "process_var_multiplier": 0.001,
+      "entry_z": 2.0,
+      "exit_z": 0.75,
+      "vol_span": 20
+    },
+    "train_metrics": {
+      "annual_return": 0.038923061150608174,
+      "annual_volatility": 0.044983091365009324,
+      "sharpe": 0.8713010671523218,
+      "max_drawdown": -0.052832006897840955,
+      "total_return": 0.38385440114495295,
+      "trade_count": 66.0,
+      "active_day_ratio": 0.45988805970149255
+    },
+    "test_metrics": {
+      "annual_return": 0.004828336487544327,
+      "annual_volatility": 0.03977112921275439,
+      "sharpe": 0.14098394582958518,
+      "max_drawdown": -0.08018799265664289,
+      "total_return": 0.02770993227505314,
+      "trade_count": 31.0,
+      "active_day_ratio": 0.4671328671328671
+    }
+  }
+}
