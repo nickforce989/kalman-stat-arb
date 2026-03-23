@@ -83,6 +83,8 @@ Bootstrap uncertainty on the portfolio Sharpe difference:
 - 95% CI: `[-0.47, 1.10]`
 - Probability that Kalman Sharpe exceeds naive Sharpe: `83.7%`
 
+The interval is still wide because the study only has `8` selected pairs and a relatively short post-`2020-07-13` test window, so the cross-sectional power is limited even though the direction of the effect is informative.
+
 Interpretation:
 
 - the Kalman model improves the cross-sectional point estimates
@@ -127,6 +129,8 @@ This is a much stronger conclusion than a single Sharpe number:
 - implementation frictions are what destroy most of the edge
 - the Kalman strategy is still consistently better than the naive baseline across the tested cost grid
 
+The underlying table is committed in `results/universe/portfolio_cost_sensitivity.csv`.
+
 ### Illustrative `V/MA` Pair
 
 | Cost (bps) | Naive Sharpe | Kalman Sharpe |
@@ -137,6 +141,8 @@ This is a much stronger conclusion than a single Sharpe number:
 | 10 | -0.98 | -0.92 |
 
 On `V/MA`, the Kalman strategy executes `217` test trades versus `207.5` for the naive baseline. The dynamic hedge ratio makes the model more responsive, but that responsiveness also increases turnover and leaves the strategy highly cost-sensitive.
+
+The underlying table is committed in `results/v_ma/cost_sensitivity.csv`.
 
 ## Why `V/MA` Is Still In The Repo
 
@@ -223,7 +229,6 @@ Interpretation:
 ```text
 README.md
 data/
-notebooks/
 results/
 scripts/
 src/
