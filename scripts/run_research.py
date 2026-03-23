@@ -10,7 +10,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from quant_project.plots import plot_equity_curves, plot_kalman_stability, plot_signal_vs_spread
+from quant_project.plots import plot_equity_curves, plot_hedge_ratio_path, plot_kalman_stability, plot_signal_vs_spread
 from quant_project.research import ResearchConfig, run_research
 
 
@@ -43,10 +43,7 @@ def main() -> None:
     )
 
     summary = research_result.to_summary_dict()
-
-    summary_path = output_dir / "summary.json"
-    summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-
+    (output_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     research_result.naive.full_frame.to_csv(output_dir / "naive_daily_frame.csv", index=False)
     research_result.kalman.full_frame.to_csv(output_dir / "kalman_daily_frame.csv", index=False)
     research_result.naive.tuning_grid.to_csv(output_dir / "naive_tuning_grid.csv", index=False)
@@ -54,12 +51,19 @@ def main() -> None:
 
     plot_signal_vs_spread(
         strategy_frame=research_result.kalman.full_frame.iloc[research_result.split_index :].reset_index(drop=True),
-        title=f"{args.asset_a.upper()}/{args.asset_b.upper()} spread vs Kalman equilibrium (test set)",
+        title=f"{args.asset_a.upper()}/{args.asset_b.upper()} residual vs state-space equilibrium (test set)",
         entry_z=float(research_result.kalman.config["entry_z"]),
         exit_z=float(research_result.kalman.config["exit_z"]),
         output_path=output_dir / "signal_vs_spread.png",
+        spread_label="Kalman regression residual",
+        anchor_label="Equilibrium residual = 0",
     )
     plot_equity_curves(research_result, output_dir / "equity_curves.png")
+    plot_hedge_ratio_path(
+        research_result.kalman.full_frame,
+        split_date=research_result.pair_frame.loc[research_result.split_index, "Date"],
+        output_path=output_dir / "hedge_ratio_path.png",
+    )
     plot_kalman_stability(
         tuning_grid=research_result.kalman.tuning_grid,
         selected_exit_z=float(research_result.kalman.config["exit_z"]),

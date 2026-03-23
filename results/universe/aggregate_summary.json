@@ -1,0 +1,48 @@
+{
+  "candidate_pair_count": 16,
+  "selected_pair_count": 8,
+  "selection_pvalue_threshold": 0.1,
+  "selected_pairs": [
+    "EWA/EWC",
+    "XLI/VIS",
+    "EWA/EWS",
+    "HD/LOW",
+    "TLT/IEF",
+    "TMO/DHR",
+    "MCD/YUM",
+    "KO/PEP"
+  ],
+  "cointegrated_pairs_at_5pct": 6,
+  "kalman_beats_naive_on_test_sharpe": 5,
+  "kalman_beats_naive_on_test_total_return": 6,
+  "mean_pair_test_sharpe_delta": 0.08401124585579167,
+  "median_pair_test_sharpe_delta": 0.11078724905170644,
+  "portfolio_naive": {
+    "annual_return": -0.006062272599894003,
+    "annual_volatility": 0.019236759835441018,
+    "sharpe": -0.3064765783319367,
+    "max_drawdown": -0.080575908825262,
+    "total_return": -0.033917156166762386,
+    "trade_count": 0.0,
+    "avg_notional_turnover": 0.0,
+    "active_day_ratio": 1.0
+  },
+  "portfolio_kalman": {
+    "annual_return": -0.0002652727453171799,
+    "annual_volatility": 0.017872109721818297,
+    "sharpe": -0.005913128251250335,
+    "max_drawdown": -0.03744935303550101,
+    "total_return": -0.0015043845352993301,
+    "trade_count": 0.0,
+    "avg_notional_turnover": 0.0,
+    "active_day_ratio": 0.9993006993006993
+  },
+  "portfolio_sharpe_delta_bootstrap": {
+    "point_estimate": 0.3005634500806863,
+    "ci_low": -0.47302473761181535,
+    "ci_high": 1.0985793959491288,
+    "probability_positive": 0.8366666666666667,
+    "block_size": 20,
+    "n_boot": 300
+  }
+}

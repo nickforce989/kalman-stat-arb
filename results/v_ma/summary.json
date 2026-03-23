@@ -7,61 +7,161 @@
     "cost_bps": 5.0
   },
   "hedge_ratio": {
-    "alpha": 10.244341892397086,
-    "beta": 0.6070853963009168
+    "alpha": 10.244341892397093,
+    "beta": 0.6070853963009164
   },
   "split_index": 2144,
   "train_end_date": "2020-07-10",
   "test_start_date": "2020-07-13",
+  "diagnostics": {
+    "train_ols": {
+      "alpha": 10.24434189239695,
+      "beta": 0.6070853963009173,
+      "beta_ci_95": [
+        0.6042016069232903,
+        0.6099691856785443
+      ],
+      "r_squared": 0.9875881726142821
+    },
+    "engle_granger": {
+      "statistic": -2.3551280502956864,
+      "pvalue": 0.3463908183288109,
+      "critical_values": [
+        -3.901557846425731,
+        -3.3389826756203496,
+        -3.046429687003601
+      ]
+    },
+    "spread_stationarity": {
+      "train_adf": {
+        "statistic": -2.355085932791343,
+        "pvalue": 0.15481623468739786,
+        "used_lag": 4,
+        "observations": 2139,
+        "critical_values": {
+          "1%": -3.4334108531807006,
+          "5%": -2.862892168387536,
+          "10%": -2.5674898285322496
+        }
+      },
+      "train_kpss": {
+        "statistic": 2.33297732924453,
+        "pvalue": 0.01,
+        "used_lag": 28,
+        "critical_values": {
+          "10%": 0.347,
+          "5%": 0.463,
+          "2.5%": 0.574,
+          "1%": 0.739
+        }
+      },
+      "test_adf": {
+        "statistic": -3.972529831125205,
+        "pvalue": 0.001561384520252032,
+        "used_lag": 2,
+        "observations": 1427,
+        "critical_values": {
+          "1%": -3.4349408214067227,
+          "5%": -2.8635675309927153,
+          "10%": -2.5678494453155656
+        }
+      },
+      "test_kpss": {
+        "statistic": 0.16927181958113305,
+        "pvalue": 0.1,
+        "used_lag": 24,
+        "critical_values": {
+          "10%": 0.347,
+          "5%": 0.463,
+          "2.5%": 0.574,
+          "1%": 0.739
+        }
+      }
+    }
+  },
   "naive": {
+    "label": "Static hedge ratio + rolling z-score",
     "config": {
       "window": 10,
-      "entry_z": 2.0,
+      "entry_z": 1.0,
       "exit_z": 0.5
     },
     "train_metrics": {
-      "annual_return": 0.023519070278100296,
-      "annual_volatility": 0.034033974800856834,
-      "sharpe": 0.7000559968604876,
-      "max_drawdown": -0.07583758089916093,
-      "total_return": 0.21869662092912612,
-      "trade_count": 110.0,
-      "active_day_ratio": 0.28544776119402987
+      "annual_return": 0.063102497832213,
+      "annual_volatility": 0.051444935436025255,
+      "sharpe": 1.2152961992094125,
+      "max_drawdown": -0.07308278044234884,
+      "total_return": 0.683059972704338,
+      "trade_count": 337.0,
+      "avg_notional_turnover": 0.31431715631970447,
+      "active_day_ratio": 0.7369402985074627
     },
     "test_metrics": {
-      "annual_return": -0.016794108757069437,
-      "annual_volatility": 0.02844984660736945,
-      "sharpe": -0.5810474701953735,
-      "max_drawdown": -0.1162080963008636,
-      "total_return": -0.09163519663824693,
-      "trade_count": 59.0,
-      "active_day_ratio": 0.26853146853146853
+      "annual_return": -0.0068478644825678,
+      "annual_volatility": 0.04450347989465793,
+      "sharpe": -0.13213100209619763,
+      "max_drawdown": -0.0954158036200724,
+      "total_return": -0.03824214921507507,
+      "trade_count": 207.5,
+      "avg_notional_turnover": 0.2901736359217327,
+      "active_day_ratio": 0.76993006993007
+    },
+    "test_uncertainty": {
+      "point_estimate": -0.13213100209619738,
+      "ci_low": -0.8058724092239032,
+      "ci_high": 0.6223710690004155,
+      "probability_positive": 0.38,
+      "block_size": 20,
+      "n_boot": 300
     }
   },
   "kalman": {
+    "label": "Kalman state-space regression",
     "config": {
-      "process_var_multiplier": 0.001,
-      "entry_z": 2.0,
-      "exit_z": 0.75,
-      "vol_span": 20
+      "process_var_multiplier": 0.05,
+      "entry_z": 1.0,
+      "exit_z": 0.25,
+      "vol_span": 40
     },
     "train_metrics": {
-      "annual_return": 0.038923061150608174,
-      "annual_volatility": 0.044983091365009324,
-      "sharpe": 0.8713010671523218,
-      "max_drawdown": -0.052832006897840955,
-      "total_return": 0.38385440114495295,
-      "trade_count": 66.0,
-      "active_day_ratio": 0.45988805970149255
+      "annual_return": 0.05820002015090675,
+      "annual_volatility": 0.04902020963699806,
+      "sharpe": 1.1785939166807282,
+      "max_drawdown": -0.08272486551516056,
+      "total_return": 0.6181582386417201,
+      "trade_count": 260.0,
+      "avg_notional_turnover": 0.24331818672687874,
+      "active_day_ratio": 0.5797574626865671
     },
     "test_metrics": {
-      "annual_return": 0.004828336487544327,
-      "annual_volatility": 0.03977112921275439,
-      "sharpe": 0.14098394582958518,
-      "max_drawdown": -0.08018799265664289,
-      "total_return": 0.02770993227505314,
-      "trade_count": 31.0,
-      "active_day_ratio": 0.4671328671328671
+      "annual_return": 0.004849856435134692,
+      "annual_volatility": 0.03677553284675298,
+      "sharpe": 0.14993181560074342,
+      "max_drawdown": -0.09477077033562287,
+      "total_return": 0.027834836499018634,
+      "trade_count": 217.0,
+      "avg_notional_turnover": 0.30435280227586825,
+      "active_day_ratio": 0.5132867132867133
+    },
+    "test_uncertainty": {
+      "point_estimate": 0.14993181560074478,
+      "ci_low": -0.666818911404025,
+      "ci_high": 0.9226822661221867,
+      "probability_positive": 0.6366666666666667,
+      "block_size": 20,
+      "n_boot": 300
+    }
+  },
+  "strategy_difference": {
+    "test_sharpe_delta": 0.2820628176969411,
+    "test_total_return_delta": 0.0660769857140937,
+    "bootstrap_sharpe_delta": {
+      "point_estimate": 0.2820628176969422,
+      "ci_low": -0.5386214339302001,
+      "ci_high": 0.9293057020702815,
+      "probability_positive": 0.7,
+      "block_size": 20,
+      "n_boot": 300
     }
   }
 }

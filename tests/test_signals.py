@@ -4,9 +4,10 @@ import numpy as np
 import pandas as pd
 
 from quant_project.signals import (
-    KalmanSignalConfig,
-    build_kalman_signal,
+    KalmanRegressionSignalConfig,
+    build_kalman_regression_signal,
     build_positions,
+    estimate_dynamic_hedge_ratio,
     estimate_hedge_ratio,
 )
 
@@ -25,17 +26,30 @@ def test_estimate_hedge_ratio_recovers_linear_relationship() -> None:
     assert abs(hedge.beta - 0.75) < 1e-10
 
 
-def test_kalman_signal_tracks_latent_spread_better_than_raw_observations() -> None:
-    index = pd.RangeIndex(100)
-    clean = pd.Series(np.sin(np.linspace(0.0, 4.0, 100)), index=index)
-    noisy = clean + pd.Series(np.random.default_rng(7).normal(scale=0.35, size=100), index=index)
+def test_dynamic_hedge_ratio_tracks_drifting_beta_better_than_static_beta() -> None:
+    rng = np.random.default_rng(7)
+    asset_b = pd.Series(np.linspace(90.0, 120.0, 160) + rng.normal(scale=1.0, size=160))
+    true_beta = pd.Series(np.linspace(0.7, 1.25, 160))
+    asset_a = 4.0 + true_beta * asset_b + rng.normal(scale=0.75, size=160)
 
-    kalman = build_kalman_signal(
-        noisy,
-        KalmanSignalConfig(process_var_multiplier=0.1, entry_z=1.5, exit_z=0.5, vol_span=10),
-        observation_var=float(noisy.var()),
+    dynamic = estimate_dynamic_hedge_ratio(asset_a, asset_b, train_size=100, process_var_multiplier=0.01)
+    static_beta = estimate_hedge_ratio(asset_a.iloc[:100], asset_b.iloc[:100]).beta
+
+    dynamic_error = float(np.mean(np.abs(dynamic["beta"] - true_beta)))
+    static_error = float(np.mean(np.abs(static_beta - true_beta)))
+    assert dynamic_error < static_error
+
+
+def test_kalman_regression_signal_exposes_dynamic_beta_column() -> None:
+    asset_b = pd.Series(np.linspace(50.0, 60.0, 120))
+    asset_a = pd.Series(5.0 + 1.1 * asset_b + np.sin(np.linspace(0.0, 3.0, 120)))
+
+    signal = build_kalman_regression_signal(
+        asset_a,
+        asset_b,
+        train_size=80,
+        config=KalmanRegressionSignalConfig(process_var_multiplier=0.01, entry_z=1.5, exit_z=0.5, vol_span=20),
     ).frame
 
-    raw_mse = float(((noisy - clean) ** 2).mean())
-    kalman_mse = float(((kalman["anchor"] - clean) ** 2).mean())
-    assert kalman_mse < raw_mse
+    assert {"alpha", "beta", "spread", "signal_vol", "zscore", "position"}.issubset(signal.columns)
+    assert signal["beta"].notna().all()
