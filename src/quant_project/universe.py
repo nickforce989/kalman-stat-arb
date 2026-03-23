@@ -7,7 +7,7 @@ from typing import Any
 import pandas as pd
 from statsmodels.tsa.stattools import coint
 
-from quant_project.backtest import summarize_returns
+from quant_project.backtest import BacktestConfig, backtest_pair, summarize_returns
 from quant_project.data import load_pair_close_frame
 from quant_project.diagnostics import bootstrap_sharpe_difference
 from quant_project.research import BOOTSTRAP_BLOCK_SIZE, BOOTSTRAP_SAMPLES, BOOTSTRAP_SEED, ResearchConfig, ResearchResult, run_research
@@ -53,6 +53,26 @@ class UniverseResult:
     pair_summary: pd.DataFrame
     portfolio_frame: pd.DataFrame
     aggregate_summary: dict[str, Any]
+
+
+def _strategy_returns_with_cost(result: ResearchResult, strategy_name: str, cost_bps: float) -> pd.DataFrame:
+    strategy = result.naive if strategy_name == "naive" else result.kalman
+    asset_a = result.config.asset_a
+    asset_b = result.config.asset_b
+    beta_input: float | pd.Series
+    if "beta" in strategy.full_frame.columns:
+        beta_input = strategy.full_frame["beta"]
+    else:
+        beta_input = result.hedge_ratio.beta
+    backtest = backtest_pair(
+        prices=result.pair_frame.loc[:, ["Date", asset_a, asset_b]],
+        asset_a=asset_a,
+        asset_b=asset_b,
+        beta=beta_input,
+        positions=strategy.full_frame["position"],
+        config=BacktestConfig(cost_bps=cost_bps),
+    )
+    return backtest.frame.iloc[result.split_index :][["Date", "net_return"]].reset_index(drop=True)
 
 
 def _screen_candidate_pairs(config: UniverseConfig, cache_dir: str | None = None) -> tuple[pd.DataFrame, list[tuple[str, str]]]:
@@ -167,6 +187,8 @@ def run_universe_research(config: UniverseConfig, cache_dir: str | None = None) 
         "selection_pvalue_threshold": config.selection_pvalue_threshold,
         "selected_pairs": [f"{asset_a}/{asset_b}" for asset_a, asset_b in selected_pairs],
         "cointegrated_pairs_at_5pct": int((pair_summary["engle_granger_pvalue"] < 0.05).sum()),
+        "test_adf_stationary_pairs_at_5pct": int((pair_summary["test_adf_pvalue"] < 0.05).sum()),
+        "test_kpss_nonrejected_stationary_pairs_at_5pct": int((pair_summary["test_kpss_pvalue"] > 0.05).sum()),
         "kalman_beats_naive_on_test_sharpe": int(pair_summary["kalman_outperforms_on_sharpe"].sum()),
         "kalman_beats_naive_on_test_total_return": int(pair_summary["kalman_outperforms_on_total_return"].sum()),
         "mean_pair_test_sharpe_delta": float(pair_summary["kalman_minus_naive_sharpe"].mean()),
@@ -191,3 +213,28 @@ def run_universe_research(config: UniverseConfig, cache_dir: str | None = None) 
         portfolio_frame=portfolio_frame,
         aggregate_summary=aggregate_summary,
     )
+
+
+def build_universe_cost_sensitivity_table(
+    universe_result: UniverseResult,
+    cost_grid: list[float] | tuple[float, ...] = (0.0, 2.0, 5.0, 10.0),
+) -> pd.DataFrame:
+    rows: list[dict[str, float | str]] = []
+
+    for strategy_name in ["naive", "kalman"]:
+        for cost_bps in cost_grid:
+            merged: pd.DataFrame | None = None
+            for result in universe_result.pair_results:
+                pair_name = f"{result.config.asset_a}/{result.config.asset_b}"
+                returns_frame = _strategy_returns_with_cost(result, strategy_name, cost_bps).rename(
+                    columns={"net_return": pair_name}
+                )
+                merged = returns_frame if merged is None else merged.merge(returns_frame, on="Date", how="outer")
+
+            if merged is None:
+                continue
+            portfolio_returns = merged.drop(columns=["Date"]).mean(axis=1, skipna=True)
+            metrics = summarize_returns(portfolio_returns)
+            rows.append({"strategy": strategy_name, "cost_bps": float(cost_bps), **metrics})
+
+    return pd.DataFrame(rows)

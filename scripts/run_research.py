@@ -10,8 +10,14 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from quant_project.plots import plot_equity_curves, plot_hedge_ratio_path, plot_kalman_stability, plot_signal_vs_spread
-from quant_project.research import ResearchConfig, run_research
+from quant_project.plots import (
+    plot_equity_curves,
+    plot_hedge_ratio_path,
+    plot_kalman_stability,
+    plot_price_vs_fair_value,
+    plot_signal_vs_spread,
+)
+from quant_project.research import ResearchConfig, build_cost_sensitivity_table, run_research
 
 
 def parse_args() -> argparse.Namespace:
@@ -44,6 +50,7 @@ def main() -> None:
 
     summary = research_result.to_summary_dict()
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    build_cost_sensitivity_table(research_result).to_csv(output_dir / "cost_sensitivity.csv", index=False)
     research_result.naive.full_frame.to_csv(output_dir / "naive_daily_frame.csv", index=False)
     research_result.kalman.full_frame.to_csv(output_dir / "kalman_daily_frame.csv", index=False)
     research_result.naive.tuning_grid.to_csv(output_dir / "naive_tuning_grid.csv", index=False)
@@ -57,6 +64,12 @@ def main() -> None:
         output_path=output_dir / "signal_vs_spread.png",
         spread_label="Kalman regression residual",
         anchor_label="Equilibrium residual = 0",
+    )
+    plot_price_vs_fair_value(
+        strategy_frame=research_result.kalman.full_frame.iloc[research_result.split_index :].reset_index(drop=True),
+        asset_column=args.asset_a.upper(),
+        output_path=output_dir / "price_vs_fair_value.png",
+        title=f"{args.asset_a.upper()} observed price vs Kalman fair value (test set)",
     )
     plot_equity_curves(research_result, output_dir / "equity_curves.png")
     plot_hedge_ratio_path(

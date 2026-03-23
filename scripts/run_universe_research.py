@@ -11,7 +11,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from quant_project.plots import plot_universe_portfolio_equity, plot_universe_test_sharpes
-from quant_project.universe import CANDIDATE_PAIR_UNIVERSE, UniverseConfig, run_universe_research
+from quant_project.universe import CANDIDATE_PAIR_UNIVERSE, UniverseConfig, build_universe_cost_sensitivity_table, run_universe_research
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,10 +45,12 @@ def main() -> None:
     screen_table_path = output_dir / "screen_table.csv"
     aggregate_summary_path = output_dir / "aggregate_summary.json"
     portfolio_returns_path = output_dir / "portfolio_returns.csv"
+    portfolio_cost_sensitivity_path = output_dir / "portfolio_cost_sensitivity.csv"
 
     universe_result.screen_table.to_csv(screen_table_path, index=False)
     universe_result.pair_summary.to_csv(pair_summary_path, index=False)
     universe_result.portfolio_frame.to_csv(portfolio_returns_path, index=False)
+    build_universe_cost_sensitivity_table(universe_result).to_csv(portfolio_cost_sensitivity_path, index=False)
     aggregate_summary_path.write_text(json.dumps(universe_result.aggregate_summary, indent=2), encoding="utf-8")
 
     plot_universe_test_sharpes(universe_result.pair_summary, output_dir / "pair_test_sharpes.png")

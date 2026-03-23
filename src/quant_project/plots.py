@@ -63,6 +63,28 @@ def plot_signal_vs_spread(
     _save_figure(output_path)
 
 
+def plot_price_vs_fair_value(
+    strategy_frame: pd.DataFrame,
+    asset_column: str,
+    output_path: Path,
+    title: str,
+) -> None:
+    fig, axis = plt.subplots(figsize=(12, 5))
+    axis.plot(strategy_frame["Date"], strategy_frame[asset_column], linewidth=1.4, color="#264653", label="Observed price")
+    axis.plot(
+        strategy_frame["Date"],
+        strategy_frame["fitted_price"],
+        linewidth=1.4,
+        color="#e76f51",
+        label="Kalman filtered fair value",
+    )
+    axis.set_title(title)
+    axis.set_ylabel("Price")
+    axis.legend(loc="upper left")
+    axis.grid(alpha=0.25)
+    _save_figure(output_path)
+
+
 def plot_equity_curves(research_result: ResearchResult, output_path: Path) -> None:
     split_date = research_result.pair_frame.loc[research_result.split_index, "Date"]
     fig, axis = plt.subplots(figsize=(12, 5))

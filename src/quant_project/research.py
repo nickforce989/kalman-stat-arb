@@ -91,6 +91,49 @@ class ResearchResult:
         }
 
 
+def _extract_strategy_beta(strategy_result: StrategyResearchResult, fallback_beta: float) -> float | pd.Series:
+    return strategy_result.full_frame["beta"] if "beta" in strategy_result.full_frame.columns else fallback_beta
+
+
+def build_cost_sensitivity_table(
+    research_result: ResearchResult,
+    cost_grid: list[float] | tuple[float, ...] = (0.0, 2.0, 5.0, 10.0),
+) -> pd.DataFrame:
+    asset_a = research_result.config.asset_a
+    asset_b = research_result.config.asset_b
+    price_frame = research_result.pair_frame.loc[:, ["Date", asset_a, asset_b]]
+    rows: list[dict[str, float | str]] = []
+
+    for strategy_name, strategy_result in [("naive", research_result.naive), ("kalman", research_result.kalman)]:
+        beta_input = _extract_strategy_beta(strategy_result, research_result.hedge_ratio.beta)
+        positions = strategy_result.full_frame["position"]
+        for cost_bps in cost_grid:
+            backtest = backtest_pair(
+                prices=price_frame,
+                asset_a=asset_a,
+                asset_b=asset_b,
+                beta=beta_input,
+                positions=positions,
+                config=BacktestConfig(cost_bps=cost_bps),
+            )
+            test_frame = backtest.frame.iloc[research_result.split_index :].reset_index(drop=True)
+            metrics = summarize_returns(
+                test_frame["net_return"],
+                turnover=test_frame["turnover"],
+                notional_turnover=test_frame["notional_turnover"],
+            )
+            rows.append(
+                {
+                    "strategy": strategy_name,
+                    "label": strategy_result.label,
+                    "cost_bps": float(cost_bps),
+                    **metrics,
+                }
+            )
+
+    return pd.DataFrame(rows)
+
+
 def _select_better_candidate(
     best: tuple[tuple[float, float, float], Any] | None,
     candidate_rank: tuple[float, float, float],

@@ -13,6 +13,8 @@
     "KO/PEP"
   ],
   "cointegrated_pairs_at_5pct": 6,
+  "test_adf_stationary_pairs_at_5pct": 3,
+  "test_kpss_nonrejected_stationary_pairs_at_5pct": 0,
   "kalman_beats_naive_on_test_sharpe": 5,
   "kalman_beats_naive_on_test_total_return": 6,
   "mean_pair_test_sharpe_delta": 0.08401124585579167,
